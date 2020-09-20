@@ -1,0 +1,24 @@
+{
+    "methods" : {
+        "rdiff": {
+            "command" : "rdiff-backup",
+            "params" : "--exclude '**/.git' --exclude '**/.svn' --exclude '**/.ssh' --exclude '**/.DS_Store'"
+        },
+        "cp" : {
+            "command" : "cp",
+            "params" : "-r"
+        },
+        "rclone" : {
+            "command" : "rclone",
+            "params" : "copy --progress"
+        }
+    },
+    "backups" : [
+        { 
+            "method" : "rdiff",
+            "src" : "/Users/user/Documents",
+            "dst" : "/Volumes/USB_DRIVE",
+            "post": "rdiff-backup -l /Volumes/USB_DRIVE"
+        }
+    ]
+}
