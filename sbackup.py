@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+import sys
+
+if not (sys.version_info >= (3, 6, 0)):
+    print("Exiting... Python version 3.6+ is required to run sbackup.py")
+    exit(1)
+
 import json
 import os
 import shutil
