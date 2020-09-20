@@ -82,7 +82,7 @@ def load_config():
             backups = config["backups"]
             sb_print("Loaded backup configuration file")
     else:
-        sb_print("No configuration file found for sbackup, exiting")
+        sb_print("Exiting... No configuration file found at: " + str(config_file))
         exit(1)
 
 
