@@ -7,19 +7,16 @@ if not (sys.version_info >= (3, 6, 0)):
     exit(1)
 
 import json
+import logging
 import os
 import shutil
 from pathlib import Path
 
-CONFIG_FILE_DEFAULT_PATH = ".sbackup"
-CONFIG_FILE_NAME = "backup.json"
+config_default_directory = Path.home() / ".sbackup"
+config_file_name = "backup.json"
 
 methods = {}
 backups = {}
-
-
-def sb_print(message):
-    print("[backup] " + message)
 
 
 def is_remote(path):
@@ -38,8 +35,8 @@ def do_backups():
     counter = 0
     for backup in backups:
         counter = counter + 1
-        sb_print("")
-        sb_print("Processing backup #" + str(counter))
+        logging.info("----------------------------------")
+        logging.info("Processing backup #" + str(counter))
 
         method = backup["method"]
         src = backup["src"]
@@ -48,53 +45,56 @@ def do_backups():
         if method in methods:
             backup_command = methods[method]["command"]
             if shutil.which(backup_command) is None:
-                sb_print("Skipped backup, command not found: " + backup_command)
+                logging.info("Skipped backup, command not found: " + backup_command)
                 continue
             if not verify_src_and_dst(src, dst):
-                sb_print("Skipped backup, invalid src or dst (" + src + " to " + dst + ")")
+                logging.info("Skipped backup, invalid src or dst (" + src + " to " + dst + ")")
                 continue
 
             if "pre" in backup:
                 prehook = backup["pre"]
-                sb_print("Running prehook command:")
-                sb_print(prehook)
+                logging.info("Running prehook command:")
+                logging.info(prehook)
                 os.system(prehook)
 
             backup_command_params = methods[method]["params"]
             final_command_args = [backup_command] + backup_command_params.split(' ') + [src, dst]
             final_command = ' '.join(final_command_args)
-            sb_print("Running backup:")
-            sb_print(final_command)
+            logging.info("Running backup:")
+            logging.info(final_command)
             os.system(final_command)
 
             if "post" in backup:
                 posthook = backup["post"]
-                sb_print("Running posthook command:")
-                sb_print(posthook)
+                logging.info("Running posthook command:")
+                logging.info(posthook)
                 os.system(posthook)
         else:
-            sb_print("Skipped backup, backup method not found: " + method)
+            logging.info("Skipped backup, backup method not found: " + method)
             continue
-    sb_print("Completed backups")
 
 
 def load_config():
     global methods, backups
-    config_file = Path.home() / CONFIG_FILE_DEFAULT_PATH / CONFIG_FILE_NAME
+    config_file = config_default_directory / config_file_name
     if config_file.exists() and config_file.is_file():
         with config_file.open() as f:
             config = json.load(f)
             methods = config["methods"]
             backups = config["backups"]
-            sb_print("Loaded backup configuration file")
+            logging.info("Loaded backup configuration file from: " + str(config_file))
     else:
-        sb_print("Exiting... No configuration file found at: " + str(config_file))
+        logging.info("Exiting... No configuration file found at: " + str(config_file))
         exit(1)
 
 
 def sbackup():
+    logging.basicConfig(stream=sys.stdout, format="[backup] %(asctime)s %(levelname)-6s: %(message)s",
+                        level=logging.INFO, datefmt="%Y-%m-%d %H:%M:%S")
+    logging.info("Started sbackup.py")
     load_config()
     do_backups()
+    logging.info("Completed backups")
 
 
 if __name__ == '__main__':
