@@ -30,8 +30,8 @@ def is_remote(path):
 
 
 def verify_src_and_dst(src, dst):
-    src_path = Path(src)
-    dst_path = Path(dst)
+    src_path = Path(src).expanduser()
+    dst_path = Path(dst).expanduser()
     return (src_path.exists() and (src_path.is_file() or src_path.is_dir())) \
         and (is_remote(dst) or (dst_path.exists() and (dst_path.is_dir())))
 
