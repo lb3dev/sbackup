@@ -6,6 +6,7 @@ if not (sys.version_info >= (3, 6, 0)):
     print("Exiting... Python version 3.6+ is required to run sbackup.py")
     exit(1)
 
+import argparse
 import json
 import logging
 import os
@@ -87,10 +88,27 @@ def load_config():
         exit(1)
 
 
-def sbackup():
+def parse_arguments():
+    global config_default_directory
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-cd", "--config-directory", help="Directory that contains sbackup.py configs", type=str)
+    args = parser.parse_args()
+    if args.config_directory:
+        config_default_directory = Path(args.config_directory).expanduser()
+
+
+def configure_logging():
     logging.basicConfig(stream=sys.stdout, format="[backup] %(asctime)s %(levelname)-6s: %(message)s",
                         level=logging.INFO, datefmt="%Y-%m-%d %H:%M:%S")
-    logging.info("Started sbackup.py")
+    logs_directory = config_default_directory / logs_directory_name
+    logs_directory.mkdir(exist_ok=True)
+
+
+def sbackup():
+    parse_arguments()
+    configure_logging()
+
+    logging.info("Started backups")
     load_config()
     do_backups()
     logging.info("Completed backups")
