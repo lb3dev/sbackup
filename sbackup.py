@@ -19,6 +19,12 @@ methods = {}
 backups = {}
 
 
+def execute_command(command, name):
+    logging.info("Running " + name + " command:")
+    logging.info(command)
+    os.system(command)
+
+
 def is_remote(path):
     return ':' in path
 
@@ -52,23 +58,15 @@ def do_backups():
                 continue
 
             if "pre" in backup:
-                prehook = backup["pre"]
-                logging.info("Running prehook command:")
-                logging.info(prehook)
-                os.system(prehook)
+                execute_command(backup["pre"], "prehook")
 
             backup_command_params = methods[method]["params"]
             final_command_args = [backup_command] + backup_command_params.split(' ') + [src, dst]
             final_command = ' '.join(final_command_args)
-            logging.info("Running backup:")
-            logging.info(final_command)
-            os.system(final_command)
+            execute_command(final_command, "backup")
 
             if "post" in backup:
-                posthook = backup["post"]
-                logging.info("Running posthook command:")
-                logging.info(posthook)
-                os.system(posthook)
+                execute_command(backup["post"], "posthook")
         else:
             logging.info("Skipped backup, backup method not found: " + method)
             continue
