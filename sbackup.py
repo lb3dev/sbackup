@@ -13,7 +13,8 @@ import shutil
 from pathlib import Path
 
 config_default_directory = Path.home() / ".sbackup"
-config_file_name = "backup.json"
+config_file_name = "sbackup.json"
+logs_directory_name = "logs"
 
 methods = {}
 backups = {}
