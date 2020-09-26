@@ -9,8 +9,8 @@ if not (sys.version_info >= (3, 6, 0)):
 import argparse
 import json
 import logging
-import os
 import shutil
+import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -27,7 +27,9 @@ backups = {}
 def execute_command(command, name):
     logging.info("Running " + name + " command:")
     logging.info(command)
-    os.system(command)
+    result = subprocess.check_output(command, shell=True).decode(sys.stdout.encoding)
+    for result_line in result.split("\n"):
+        logging.info(result_line)
 
 
 def is_remote(path):
