@@ -82,9 +82,9 @@ def load_config():
             config = json.load(f)
             methods = config["methods"]
             backups = config["backups"]
-            logging.info("Loaded backup configuration file from: " + str(config_file))
+            logging.info("Loaded backup configuration file from: " + str(config_file.absolute()))
     else:
-        logging.info("Exiting... No configuration file found at: " + str(config_file))
+        logging.info("Exiting... No configuration file found at: " + str(config_file.absolute()))
         exit(1)
 
 
