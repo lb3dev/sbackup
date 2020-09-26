@@ -101,7 +101,7 @@ def parse_arguments():
 
 
 def configure_logging():
-    formatter = logging.Formatter("[backup] %(asctime)s %(levelname)-6s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+    formatter = logging.Formatter("%(asctime)s %(levelname)-5s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
