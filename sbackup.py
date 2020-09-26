@@ -11,11 +11,14 @@ import json
 import logging
 import os
 import shutil
+from datetime import datetime
 from pathlib import Path
 
 config_default_directory = Path.home() / ".sbackup"
 config_file_name = "sbackup.json"
 logs_directory_name = "logs"
+logs_file_name_prefix = "sbackup_"
+logs_file_name_suffix = ".log"
 
 methods = {}
 backups = {}
@@ -98,10 +101,21 @@ def parse_arguments():
 
 
 def configure_logging():
-    logging.basicConfig(stream=sys.stdout, format="[backup] %(asctime)s %(levelname)-6s: %(message)s",
-                        level=logging.INFO, datefmt="%Y-%m-%d %H:%M:%S")
+    formatter = logging.Formatter("[backup] %(asctime)s %(levelname)-6s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
     logs_directory = config_default_directory / logs_directory_name
     logs_directory.mkdir(exist_ok=True)
+
+    log_file_name = logs_file_name_prefix + datetime.now().strftime("%Y-%m-%d") + logs_file_name_suffix
+    file_handler = logging.FileHandler(logs_directory / log_file_name)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
 
 
 def sbackup():
