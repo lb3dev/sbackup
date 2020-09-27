@@ -19,6 +19,7 @@ config_file_name = "sbackup.json"
 logs_directory_name = "logs"
 logs_file_name_prefix = "sbackup_"
 logs_file_name_suffix = ".log"
+run_remote = False
 
 methods = {}
 backups = {}
@@ -44,7 +45,6 @@ def verify_src_and_dst(src, dst):
 
 
 def do_backups():
-    global methods, backups
     counter = 0
     for backup in backups:
         counter = counter + 1
@@ -58,10 +58,13 @@ def do_backups():
         if method in methods:
             backup_command = methods[method]["command"]
             if shutil.which(backup_command) is None:
-                logging.info("Skipped backup, command not found: " + backup_command)
+                logging.info("Skipped backup. Command not found: " + backup_command)
                 continue
             if not verify_src_and_dst(src, dst):
-                logging.info("Skipped backup, invalid src or dst (" + src + " to " + dst + ")")
+                logging.info("Skipped backup. Invalid src or dst (" + src + " to " + dst + ")")
+                continue
+            if (not run_remote) and is_remote(dst):
+                logging.info("Skipped backup. Remote backups skipped")
                 continue
 
             if "pre" in backup:
@@ -94,10 +97,12 @@ def load_config():
 
 
 def parse_arguments():
-    global config_default_directory
+    global config_default_directory, run_remote
     parser = argparse.ArgumentParser()
     parser.add_argument("-cd", "--config-directory", help="Directory that contains sbackup.py configs", type=str)
+    parser.add_argument("--remote", help="Run remote backups", action="store_true")
     args = parser.parse_args()
+    run_remote = args.remote
     if args.config_directory:
         config_default_directory = Path(args.config_directory).expanduser()
 
