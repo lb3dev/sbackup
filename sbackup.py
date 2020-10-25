@@ -28,9 +28,12 @@ backups = {}
 def execute_command(command, name):
     logging.info("Running " + name + " command:")
     logging.info(command)
-    result = subprocess.check_output(command, shell=True).decode(sys.stdout.encoding)
-    for result_line in result.split("\n"):
-        logging.info(result_line)
+    result = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    for line in iter(result.stdout.readline, b''):
+        line = line.decode(sys.stdout.encoding)
+        logging.info(line)
+    result.stdout.close()
+    result.wait()
 
 
 def is_remote(path):
