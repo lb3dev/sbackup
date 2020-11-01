@@ -71,6 +71,7 @@ def do_backups():
                 continue
             elif run_remote and (not is_remote(dst)):
                 logging.info("Skipped backup. Local backups skipped")
+                continue
 
             if "pre" in backup:
                 execute_command(backup["pre"], "prehook")
