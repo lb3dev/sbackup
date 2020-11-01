@@ -4,13 +4,13 @@
             "command" : "rdiff-backup",
             "params" : "--exclude '**/.git' --exclude '**/.svn' --exclude '**/.ssh' --exclude '**/.DS_Store'"
         },
-        "cp" : {
-            "command" : "cp",
-            "params" : "-r"
+        "rsync" : {
+            "command" : "rsync",
+            "params" : "-chavP"
         },
         "rclone" : {
             "command" : "rclone",
-            "params" : "copy --progress"
+            "params" : "copy --progress --stats=1m"
         }
     },
     "backups" : [
