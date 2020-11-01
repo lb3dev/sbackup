@@ -105,8 +105,8 @@ def load_config():
 def parse_arguments():
     global config_default_directory, run_remote
     parser = argparse.ArgumentParser()
-    parser.add_argument("-cd", "--config-directory", help="Directory that contains sbackup.py configs", type=str)
-    parser.add_argument("--remote", help="Run remote backups", action="store_true")
+    parser.add_argument("-c", "--config", help="Directory that contains sbackup.py configs", type=str)
+    parser.add_argument("-r", "--remote", help="Run remote backups only", action="store_true")
     args = parser.parse_args()
     run_remote = args.remote
     if args.config_directory:
