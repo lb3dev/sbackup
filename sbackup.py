@@ -109,8 +109,8 @@ def parse_arguments():
     parser.add_argument("-r", "--remote", help="Run remote backups only", action="store_true")
     args = parser.parse_args()
     run_remote = args.remote
-    if args.config_directory:
-        config_default_directory = Path(args.config_directory).expanduser()
+    if args.config:
+        config_default_directory = Path(args.config).expanduser()
 
 
 def configure_logging():
