@@ -63,6 +63,10 @@ def do_backups():
             if shutil.which(backup_command) is None:
                 logging.info("Skipped backup. Command not found: " + backup_command)
                 continue
+
+            if "pre" in backup:
+                execute_command(backup["pre"], "prehook")
+
             if not verify_src_and_dst(src, dst):
                 logging.info("Skipped backup. Invalid src or dst (" + src + " to " + dst + ")")
                 continue
@@ -72,9 +76,6 @@ def do_backups():
             elif run_remote and (not is_remote(dst)):
                 logging.info("Skipped backup. Local backups skipped")
                 continue
-
-            if "pre" in backup:
-                execute_command(backup["pre"], "prehook")
 
             backup_command_params = methods[method]["params"]
             final_command_args = [backup_command] + backup_command_params.split(' ') + [src, dst]
