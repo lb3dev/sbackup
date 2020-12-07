@@ -43,8 +43,32 @@ def is_remote(path):
 def verify_src_and_dst(src, dst):
     src_path = Path(src).expanduser()
     dst_path = Path(dst).expanduser()
-    return (src_path.exists() and (src_path.is_file() or src_path.is_dir())) \
+    result = (src_path.exists() and (src_path.is_file() or src_path.is_dir())) \
         and (is_remote(dst) or (dst_path.exists() and (dst_path.is_dir())))
+    if not result:
+        logging.info("Skipped backup. Invalid src or dst (" + src + " to " + dst + ")")
+    return result
+
+
+def verify_run_local_or_remote_backups(src, dst):
+    if (not run_remote) and is_remote(dst):
+        logging.info("Skipped backup. Remote backups skipped")
+        return False
+    elif run_remote and (not is_remote(dst)):
+        logging.info("Skipped backup. Local backups skipped")
+        return False
+    return True
+
+
+def verify_backup_method(method):
+    if not (method in methods):
+        logging.info("Skipped backup, backup method not found: " + method)
+        return False
+    backup_command = methods[method]["command"]
+    if shutil.which(backup_command) is None:
+        logging.info("Skipped backup. Command not found: " + backup_command)
+        return False
+    return True
 
 
 def do_backups():
@@ -58,35 +82,26 @@ def do_backups():
         src = backup["src"]
         dst = backup["dst"]
 
-        if method in methods:
-            backup_command = methods[method]["command"]
-            if shutil.which(backup_command) is None:
-                logging.info("Skipped backup. Command not found: " + backup_command)
-                continue
-
-            if "pre" in backup:
-                execute_command(backup["pre"], "prehook")
-
-            if not verify_src_and_dst(src, dst):
-                logging.info("Skipped backup. Invalid src or dst (" + src + " to " + dst + ")")
-                continue
-            if (not run_remote) and is_remote(dst):
-                logging.info("Skipped backup. Remote backups skipped")
-                continue
-            elif run_remote and (not is_remote(dst)):
-                logging.info("Skipped backup. Local backups skipped")
-                continue
-
-            backup_command_params = methods[method]["params"]
-            final_command_args = [backup_command] + backup_command_params.split(' ') + [src, dst]
-            final_command = ' '.join(final_command_args)
-            execute_command(final_command, "backup")
-
-            if "post" in backup:
-                execute_command(backup["post"], "posthook")
-        else:
-            logging.info("Skipped backup, backup method not found: " + method)
+        if not verify_run_local_or_remote_backups(src, dst):
             continue
+
+        if not verify_src_and_dst(src, dst):
+            continue
+
+        if not verify_backup_method(method):
+            continue
+
+        backup_command = methods[method]["command"]
+        if "pre" in backup:
+            execute_command(backup["pre"], "prehook")
+
+        backup_command_params = methods[method]["params"]
+        final_command_args = [backup_command] + backup_command_params.split(' ') + [src, dst]
+        final_command = ' '.join(final_command_args)
+        execute_command(final_command, "backup")
+
+        if "post" in backup:
+            execute_command(backup["post"], "posthook")
 
 
 def load_config():
