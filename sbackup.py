@@ -85,6 +85,9 @@ def do_backups():
         if not verify_run_local_or_remote_backups(src, dst):
             continue
 
+        if "pre" in backup:
+            execute_command(backup["pre"], "prehook")
+
         if not verify_src_and_dst(src, dst):
             continue
 
@@ -92,9 +95,6 @@ def do_backups():
             continue
 
         backup_command = methods[method]["command"]
-        if "pre" in backup:
-            execute_command(backup["pre"], "prehook")
-
         backup_command_params = methods[method]["params"]
         final_command_args = [backup_command] + backup_command_params.split(' ') + [src, dst]
         final_command = ' '.join(final_command_args)
