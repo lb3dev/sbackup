@@ -40,17 +40,23 @@ def is_remote(path):
     return ':' in path
 
 
-def verify_src_and_dst(src, dst):
+def verify_src(src):
     src_path = Path(src).expanduser()
-    dst_path = Path(dst).expanduser()
-    result = (src_path.exists() and (src_path.is_file() or src_path.is_dir())) \
-        and (is_remote(dst) or (dst_path.exists() and (dst_path.is_file() or dst_path.is_dir())))
+    result = src_path.exists() and (src_path.is_file() or src_path.is_dir())
     if not result:
-        logging.info("Skipped backup. Invalid src or dst (" + src + " to " + dst + ")")
+        logging.info("Skipped backup. Source path is invalid: " + src)
     return result
 
 
-def verify_run_local_or_remote_backups(src, dst):
+def verify_dst(dst):
+    dst_path = Path(dst).expanduser()
+    result = is_remote(dst) or (dst_path.exists() and (dst_path.is_file() or dst_path.is_dir()))
+    if not result:
+        logging.info("Skipped backup. Destination path is invalid: " + dst)
+    return result
+
+
+def verify_run_local_or_remote_backups(dst):
     if (not run_remote) and is_remote(dst):
         logging.info("Skipped backup. Remote backups skipped")
         return False
@@ -81,14 +87,18 @@ def do_backups():
         method = backup["method"]
         src = backup["src"]
         dst = backup["dst"]
+        skip_check = backup.get("skip_check", False)
 
-        if not verify_run_local_or_remote_backups(src, dst):
+        if not verify_run_local_or_remote_backups(dst):
+            continue
+
+        if not verify_src(src):
             continue
 
         if "pre" in backup:
             execute_command(backup["pre"], "prehook")
 
-        if not verify_src_and_dst(src, dst):
+        if (not skip_check) and (not verify_dst(dst)):
             continue
 
         if not verify_backup_method(method):
