@@ -19,7 +19,9 @@ config_file_name = "sbackup.json"
 logs_directory_name = "logs"
 logs_file_name_prefix = "sbackup_"
 logs_file_name_suffix = ".log"
+
 run_remote = False
+interactive = False
 
 methods = {}
 backups = {}
@@ -82,7 +84,7 @@ def do_backups():
     for backup in backups:
         counter = counter + 1
         logging.info("----------------------------------")
-        logging.info("Processing backup #" + str(counter))
+        logging.info("Backup #" + str(counter))
 
         method = backup["method"]
         src = backup["src"]
@@ -91,6 +93,15 @@ def do_backups():
 
         if not verify_run_local_or_remote_backups(dst):
             continue
+
+        if interactive:
+            logging.info("method: {0} | src: {1} | dst: {2}".format(method, src, dst))
+            logging.info("Proceed? [y/n]")
+            choice = input().lower()
+
+            if choice is None or (choice == '' or choice != 'y'):
+                logging.info("Skipping backup #{0} due to selecting No or unknown option".format(counter))
+                continue
 
         if not verify_src(src):
             continue
@@ -129,12 +140,14 @@ def load_config():
 
 
 def parse_arguments():
-    global config_default_directory, run_remote
+    global config_default_directory, run_remote, interactive
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", help="Directory that contains sbackup.py configs", type=str)
     parser.add_argument("-r", "--remote", help="Run remote backups only", action="store_true")
+    parser.add_argument("-i", "--interactive", help="Interactive mode for backups", action="store_true")
     args = parser.parse_args()
     run_remote = args.remote
+    interactive = args.interactive
     if args.config:
         config_default_directory = Path(args.config).expanduser()
 
